@@ -18,7 +18,6 @@ GPIO.setup(16, GPIO.IN)
 
 http = urllib3.PoolManager()
 
-
 ventana = tkinter.Tk()
 ventana.title("App")
 
