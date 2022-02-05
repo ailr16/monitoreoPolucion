@@ -1,0 +1,4 @@
+Azure CLI (en Powershell)
+
+INICIAR SESION:		az login
+VER MENSAJES RECIBIDOS: az iot hub monitor-events --hub-name monitoreoPolucion --output json
