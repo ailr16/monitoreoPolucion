@@ -1,0 +1,3 @@
+HostName=monitoreoPolucion.azure-devices.net;DeviceId=m1;SharedAccessKey=oH7JV1wKJ8QDnxJQFLJU5c8tlEDuY/Sln2bVXH8YqAU=
+
+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
