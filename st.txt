@@ -1,3 +1,16 @@
-HostName=monitoreoPolucion.azure-devices.net;DeviceId=m1;SharedAccessKey=oH7JV1wKJ8QDnxJQFLJU5c8tlEDuY/Sln2bVXH8YqAU=
+Creacion de llaves acceso (variables del SO):
+	HostName=monitoreoPolucion.azure-devices.net;DeviceId=m1;SharedAccessKey=oH7JV1wKJ8QDnxJQFLJU5c8tlEDuY/Sln2bVXH8YqAU=
 
-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
+Key GitHub:
+	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
+
+Listar puertos serie:
+	dmesg | grep tty
+
+Activar puerto serie X de RPi4:
+	sudo nano /boot/config.txt
+	dtoverlay=uartX
+
+Instalar SDK de Python Azure IoT:
+	pip install azure-iot-device
+
