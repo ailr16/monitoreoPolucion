@@ -7,11 +7,11 @@
 #include  <SoftwareSerial.h>
 
 ////////////////////Config//////////////////////
-#define   flag_pin    0     //Digital pin
-#define   analog_pin  A1    //Analog pin
-#define   rx_pin      3     //UART RX pin
-#define   tx_pin      4     //UART TX pin
-#define   sam_rate    500   //Sampling rate (ms)
+#define   flag_pin    0      //Digital pin
+#define   analog_pin  A1     //Analog pin
+#define   rx_pin      3      //UART RX pin
+#define   tx_pin      4      //UART TX pin
+#define   sam_rate    1000   //Sampling rate (ms)
 ////////////////////////////////////////////////
 
 SoftwareSerial port(rx_pin, tx_pin);                //Create serial port
