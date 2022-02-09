@@ -1,3 +1,6 @@
+#Script para leer modulos de sensores y GPS
+#ailr16		2021
+
 import tkinter
 import serial
 import urllib3

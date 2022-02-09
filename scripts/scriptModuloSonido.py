@@ -1,3 +1,6 @@
+#Script de prueba para interfaz ADC-UART basada en ATTiny85
+#ailr16     Febrero 2022
+
 import serial
 import time
 import RPi.GPIO as GPIO

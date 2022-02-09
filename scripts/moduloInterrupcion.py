@@ -1,3 +1,7 @@
+#Script para leer modulo de sensores y enviar data a Azure IoT
+#Controlador por eventos (requiere interrupciones por hardware)
+#ailr16     2022
+
 #############################Librerias############################
 import serial
 import tkinter
@@ -17,7 +21,7 @@ sensores = [0, 0, 0, 0]
 ##########################Puertos serie###########################
 mod = serial.Serial(port='/dev/ttyS0', baudrate=9600, timeout = 1)
 
-#######################Servidor remoto############################
+##########################Azure IoT###############################
 CONNECTION_STRING = "HostName=monitoreoPolucion.azure-devices.net;DeviceId=m1;SharedAccessKey=oH7JV1wKJ8QDnxJQFLJU5c8tlEDuY/Sln2bVXH8YqAU=" 
 MSG_SND = '{{"co2", {co2},"pm25", {pm25},"pm10", {pm10},"temp", {temp}}}'
 client = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING)
@@ -174,5 +178,3 @@ def compruebaHora():
         labelSPLres["bg"] = "#FFFFFF"
         
 ventana.mainloop()
-
-    

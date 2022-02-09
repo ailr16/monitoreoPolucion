@@ -1,3 +1,6 @@
+#Script Py para enviar un mensaje a Azure IoT (basado en post de un blog)
+#ailr16     2022
+
 import random  
 import time
 from azure.iot.device import IoTHubDeviceClient, Message

@@ -1,3 +1,6 @@
+#Prueba para enviar un mensaje a Azure IoT
+#ailr16 2022
+
 import RPi.GPIO as GPIO
 import time
 

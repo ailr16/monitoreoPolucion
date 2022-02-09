@@ -1,3 +1,7 @@
+#Script para leer modulo y enviara data a Az IoT
+#Utiliza retardos de tiempo, puede provocar comportamientos no esperados
+#ailr16     2022
+
 import serial
 import random  
 import time
