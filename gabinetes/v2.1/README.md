@@ -1,0 +1,1 @@
+Version sin rieles, sin ajuste de temperatura no ajustaban :-(
