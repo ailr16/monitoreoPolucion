@@ -3,7 +3,6 @@
 #ailr16     febrero 2022
 
 ################################Librerias###############################
-from unittest import skip
 import serial                       #Comunicacion serie
 import tkinter                      #GUI
 import RPi.GPIO as GPIO             #GPIO de la RPi
@@ -34,7 +33,7 @@ ts_apikey = 'CCGVDI087OPEW7OT'      #API KEY para Thingspeak
 if wifi_status == True:
     ts_server = urllib3.PoolManager()   #Iniciar comunicacion con servidor
 else:
-    skip
+    pass
 
 #######################Funciones fuera de loop##########################
 def apagar():                           #Apagar el sistema
@@ -156,7 +155,7 @@ def lee_modulos(aire, spl, pos):
         http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl}&field5={aire[3]}&field7={pos[0]}&field8={pos[1]}'
         r = ts_server.request('GET', http_request)  #Envia a thingspeak
     else:
-        skip
+        pass
 
 def act_hora():
     tiempo = time.ctime()                       #Obtiene hora del sistema
