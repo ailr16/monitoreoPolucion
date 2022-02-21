@@ -3,26 +3,38 @@
 #ailr16     febrero 2022
 
 ################################Librerias###############################
+from unittest import skip
 import serial                       #Comunicacion serie
 import tkinter                      #GUI
 import RPi.GPIO as GPIO             #GPIO de la RPi
 import time                         #Libreria de tiempo
 import os                           #Utilidades del SO
 import urllib3                      #Para protocolo HTTP
+import subprocess                   #Procesos del SO
 
 ##########################Variables generales###########################
 GPIO.setmode(GPIO.BOARD)            #Numeracion de la tarjeta
 in_signal = 16                      #Pin para interrupcion SM300D2
 i = 0                               #Variable para contador
+wifi_status = False
 
 #############################Puertos serie##############################
 mod = serial.Serial(port='/dev/ttyS0', baudrate = 9600, timeout = 1)      #UART1
-gps = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UARTx
+#gps = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UARTx
 
 #############################Thingspeak#################################
-ts_server = urllib3.PoolManager()   #Iniciar comunicacion con servidor
-ts_apikey = 'CCGVDI087OPEW7OT'      #API KEY para Thingspeak
+ps = subprocess.Popen(['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+try:
+    output = subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)    #Conexion Wifi
+    wifi_status = True
+except subprocess.CalledProcessError:
+    wifi_status = False                                                     #No conexion wifi
 
+ts_apikey = 'CCGVDI087OPEW7OT'      #API KEY para Thingspeak
+if wifi_status == True:
+    ts_server = urllib3.PoolManager()   #Iniciar comunicacion con servidor
+else:
+    skip
 
 #######################Funciones fuera de loop##########################
 def apagar():                           #Apagar el sistema
@@ -139,9 +151,12 @@ def lee_modulos(aire, spl, pos):
     label_res_lat["text"] = pos[0]              #latitud
     label_res_lon["text"] = pos[1]              #longitud
 
-    #Crea string para la solicitud
-    http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl}&field5={aire[3]}&field7={pos[0]}&field8={pos[1]}'
-    r = ts_server.request('GET', http_request)  #Envia a thingspeak
+    if wifi_status == True:                     #Si hay conexion wifi
+        #Crea string para la solicitud
+        http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl}&field5={aire[3]}&field7={pos[0]}&field8={pos[1]}'
+        r = ts_server.request('GET', http_request)  #Envia a thingspeak
+    else:
+        skip
 
 def act_hora():
     tiempo = time.ctime()                       #Obtiene hora del sistema
