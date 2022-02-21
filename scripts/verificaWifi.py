@@ -1,11 +1,8 @@
-import urllib3
-
+import subprocess
+ps = subprocess.Popen(['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 try:
-	url = "https://www.google.com"
-	urllib3.urlopen(url)
-	status = "Connected"
-	
-except:
-	status = "Not Connected"
-	
-print(status)
+    output = subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)
+    print(output)
+except subprocess.CalledProcessError:
+    # grep did not match any lines
+    print("No wireless networks connected")

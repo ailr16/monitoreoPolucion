@@ -1,6 +1,6 @@
 #Script para leer modulo de sensores y enviar data a Thingspeak
 #Controlador por eventos (requiere interrupciones por hardware)
-#ailr16     2022
+#ailr16     febrero 2022
 
 ################################Librerias###############################
 import serial                       #Comunicacion serie
