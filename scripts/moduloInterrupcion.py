@@ -1,180 +1,164 @@
-#Script para leer modulo de sensores y enviar data a Azure IoT
+#Script para leer modulo de sensores y enviar data a Thingspeak
 #Controlador por eventos (requiere interrupciones por hardware)
 #ailr16     2022
 
-#############################Librerias############################
-import serial
-import tkinter
-import RPi.GPIO as GPIO
-import random  
-import time
-import os
-from azure.iot.device import IoTHubDeviceClient, Message
+################################Librerias###############################
+import serial                       #Comunicacion serie
+import tkinter                      #GUI
+import RPi.GPIO as GPIO             #GPIO de la RPi
+import time                         #Libreria de tiempo
+import os                           #Utilidades del SO
+import urllib3                      #Para protocolo HTTP
 
-#######################Variables generales########################
-GPIO.setmode(GPIO.BOARD)
-in_signal = 16
-i = 0
-stat = 0
-sensores = [0, 0, 0, 0]
+##########################Variables generales###########################
+GPIO.setmode(GPIO.BOARD)            #Numeracion de la tarjeta
+in_signal = 16                      #Pin para interrupcion SM300D2
+i = 0                               #Variable para contador
 
-##########################Puertos serie###########################
-mod = serial.Serial(port='/dev/ttyS0', baudrate=9600, timeout = 1)
+#############################Puertos serie##############################
+mod = serial.Serial(port='/dev/ttyS0', baudrate = 9600, timeout = 1)      #UART1
+gps = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UARTx
 
-##########################Azure IoT###############################
-CONNECTION_STRING = "HostName=monitoreoPolucion.azure-devices.net;DeviceId=m1;SharedAccessKey=oH7JV1wKJ8QDnxJQFLJU5c8tlEDuY/Sln2bVXH8YqAU=" 
-MSG_SND = '{{"co2", {co2},"pm25", {pm25},"pm10", {pm10},"temp", {temp}}}'
-client = IoTHubDeviceClient.create_from_connection_string(CONNECTION_STRING)
+#############################Thingspeak#################################
+ts_server = urllib3.PoolManager()   #Iniciar comunicacion con servidor
+ts_apikey = 'CCGVDI087OPEW7OT'      #API KEY para Thingspeak
 
-###################Funciones fuera de loop########################
-def apagar():
+
+#######################Funciones fuera de loop##########################
+def apagar():                           #Apagar el sistema
     os.system("sudo shutdown -h now")
 
-def leeModulo():
-    lista = []
-    b1 = 'x'
+def lee_SM300():                        #Leer modulo SM300D2
+    lista = []                          #Inicializa lista vacia
+    b1 = 'x'                            #Inicializa bytes para verificar paquete
     b2 = 'x'
-    while ord(b1)!=60 and ord(b2)!=2:
+    while ord(b1)!=60 and ord(b2)!=2:   #Busca inicio del paquete
         b1 = mod.read()
         b2 = mod.read()
 
-    i = 0
-    while i<15:
+    j = 0
+    while j<15:                         #Guarda el paquete recibido
         lista.append(ord(mod.read()))
-        i = i + 1
+        j = j + 1
 
-    co2 = lista[0]*256 + lista[1]
-    #h20 = lista[2]*256 + lista[3]
-    #tvoc = lista[4]*256 + lista[5]
+    co2 = lista[0]*256 + lista[1]       #Decodifica el paquete
     pm25 = lista[6]*256 + lista[7]
     pm10 = lista[8]*256 + lista[9]
     temp = lista[10] + lista[11]/10
-    #hum = lista[12] + lista[13]/10
-    
-    #print("co2="+str(co2))
-    #print("pm25="+str(pm25))
-    #print("pm10="+str(pm10))
-    #print("temp="+str(temp))
-    
-    return [co2, pm25, pm10, temp]
 
-def iothub_client_telemetry_sample_run(client):
-    print ( "Sending data to IoT Hub, press Ctrl-C to exit" )
-    sensores = leeModulo()
-    msg_txt_formatted = MSG_SND.format(co2=sensores[0], pm25=sensores[1], pm10=sensores[2], temp=sensores[3])
-    message = Message(msg_txt_formatted)
-    print( "Sending message: {}".format(message) )
-    client.send_message(message)
-    print ( "Message successfully sent" )
+    return [co2, pm25, pm10, temp]      #Regresa una lista con valores recibidos
 
-def i_event(channel):
-        global i
-        global client
-        i = i + 1
-        global sensores
-        if i == 20:
-            iothub_client_telemetry_sample_run(client)
-            i = 0
-            leeImprime(leeModulo())
+def i_event(channel):                   #Atencion a la interrupcion
+        global i                        #Accede a la variable para contador
+
+        i = i + 1                       #Incrementa el contador
+        if i == 20:                     #Al recibir 20 pulsos
+            i = 0                       #Resetea el contador
+            lee_modulos(lee_SM300(), 0, [0, 0]) #Lee modulos
         else:
-            compruebaHora()
+            act_hora()                  #Actualiza hora en pantalla
 
-GPIO.setup(in_signal, GPIO.IN)
-GPIO.add_event_detect(in_signal, GPIO.FALLING, callback=i_event)
+GPIO.setup(in_signal, GPIO.IN)          #Pin 16 como entrada
+GPIO.add_event_detect(in_signal, GPIO.FALLING, callback=i_event)    #Interrupcion pin 16
 
 ###################Loop ventana########################
 ventana = tkinter.Tk()
-ventana.title("App")
+ventana.title("Monitoreo")
 
-ventana.attributes('-fullscreen', True)
-ventana.configure(bg = '#B3FFCC', cursor = "dot")
+ventana.attributes('-fullscreen', True)             #Pantalla completa
+ventana.configure(bg = '#B3FFCC', cursor = "dot")   #Cursor punto
 fondoLabel = '#B3FFCC'
 
-bg1 = tkinter.PhotoImage(file = "img1.png")
-bg2 = tkinter.PhotoImage(file = "img2.png")
+bg1 = tkinter.PhotoImage(file = "img1.png")         #Carga fondo claro
+bg2 = tkinter.PhotoImage(file = "img2.png")         #Carga fondo obscuro
 
-labelBG = tkinter.Label(ventana, image = bg1, text = "hola")
-labelBG.place(x = 0, y = 0)
+label_bg = tkinter.Label(ventana, image = bg1, text = "hola")   #Etiqueta contenedor de fondo
+label_bg.place(x = 0, y = 0)
 
-tiempo = time.ctime()
+tiempo = time.ctime()                               #Obtener hora del sistema
 hora = tiempo[11]+tiempo[12]
 minutos = tiempo[14]+tiempo[15]
 
-labelHora = tkinter.Label(ventana, text = hora+':'+minutos, bg = "#FFFFFF", font=("Arial", 40))
-labelHora.place(relx = 0.102, rely = 0.264)
+#Creacion de etiquetas
+label_hora = tkinter.Label(ventana, text = hora+':'+minutos, bg = "#FFFFFF", font=("Arial", 40))
+label_co2 = tkinter.Label(ventana, text = "CO2", bg = "#66E1FF", font=("Arial", 18))
+label_pm25 = tkinter.Label(ventana, text = "PM2.5", bg = "#66E1FF", font=("Arial", 18))
+label_pm10 = tkinter.Label(ventana, text = "PM10", bg = "#66E1FF", font=("Arial", 18))
+label_spl = tkinter.Label(ventana, text = "SPL", bg = "#FFFFFF", font=("Arial", 18))
+label_temp = tkinter.Label(ventana, text = "TEMP", bg = "#66E1FF", font=("Arial", 18))
+label_lat = tkinter.Label(ventana, text = "LATITUD", bg = "#66E1FF", font=("Arial", 15))
+label_lon = tkinter.Label(ventana, text = "LONGITUD", bg = "#66E1FF", font=("Arial", 15))
 
-labelCO2 = tkinter.Label(ventana, text = "CO2", bg = "#66E1FF", font=("Arial", 18))
-labelCO2.place(relx = 0.465, rely = 0.14)
+#Colocar etiquetas
+label_hora.place(relx = 0.102, rely = 0.264)
+label_co2.place(relx = 0.465, rely = 0.14)
+label_pm25.place(relx = 0.79, rely = 0.15)
+label_pm10.place(relx = 0.797, rely = 0.31)
+label_spl.place(relx = 0.202, rely = 0.745)
+label_temp.place(relx = 0.414, rely = 0.51)
+label_lat.place(relx = 0.671, rely = 0.71)
+label_lon.place(relx = 0.658, rely = 0.83)
 
-labelCO2res = tkinter.Label(ventana, text = "CO2", bg = "#66E1FF", font=("Arial", 28))
-labelCO2res.place(relx = 0.456, rely = 0.194)
+#Crear etiquetas para mostrar resultados
+label_res_co2 = tkinter.Label(ventana, text = "CO2", bg = "#66E1FF", font=("Arial", 28))
+label_res_pm25 = tkinter.Label(ventana, text = "PM2.5", bg = "#66E1FF", font=("Arial", 28))
+label_res_pm10 = tkinter.Label(ventana, text = "PM10", bg = "#66E1FF", font=("Arial", 28))
+label_res_spl = tkinter.Label(ventana, text = "SPL", bg = "#FFFFFF", font=("Arial", 23))
+label_res_temp = tkinter.Label(ventana, text = "TEMP", bg = "#66E1FF", font=("Arial", 28))
+label_res_lat = tkinter.Label(ventana, text = "lat", bg = "#66E1FF", font=("Arial", 22))
+label_res_lon = tkinter.Label(ventana, text = "lon", bg = "#66E1FF", font=("Arial", 22))
 
-labelPM25 = tkinter.Label(ventana, text = "PM2.5", bg = "#66E1FF", font=("Arial", 18))
-labelPM25.place(relx = 0.79, rely = 0.15)
+#Colocar etiquetas de resultado
+label_res_co2.place(relx = 0.456, rely = 0.194)
+label_res_pm25.place(relx = 0.81, rely = 0.21)
+label_res_pm10.place(relx = 0.81, rely = 0.37)
+label_res_spl.place(relx = 0.156, rely = 0.805)
+label_res_temp.place(relx = 0.41, rely = 0.562)
+label_res_lat.place(relx = 0.654, rely = 0.76)
+label_res_lon.place(relx = 0.65, rely = 0.88)
 
-labelPM25res = tkinter.Label(ventana, text = "PM2.5", bg = "#66E1FF", font=("Arial", 28))
-labelPM25res.place(relx = 0.81, rely = 0.21)
-
-labelPM10 = tkinter.Label(ventana, text = "PM10", bg = "#66E1FF", font=("Arial", 18))
-labelPM10.place(relx = 0.797, rely = 0.31)
-
-labelPM10res = tkinter.Label(ventana, text = "PM10", bg = "#66E1FF", font=("Arial", 28))
-labelPM10res.place(relx = 0.81, rely = 0.37)
-
-labelSPL = tkinter.Label(ventana, text = "SPL", bg = "#FFFFFF", font=("Arial", 18))
-labelSPL.place(relx = 0.202, rely = 0.745)
-
-labelSPLres = tkinter.Label(ventana, text = "SPL", bg = "#FFFFFF", font=("Arial", 23))
-labelSPLres.place(relx = 0.156, rely = 0.805)
-
-labelTEMP = tkinter.Label(ventana, text = "TEMP", bg = "#66E1FF", font=("Arial", 18))
-labelTEMP.place(relx = 0.414, rely = 0.51)
-
-labelTEMPres = tkinter.Label(ventana, text = "TEMP", bg = "#66E1FF", font=("Arial", 28))
-labelTEMPres.place(relx = 0.41, rely = 0.562)
-
-labelLAT = tkinter.Label(ventana, text = "LATITUD", bg = "#66E1FF", font=("Arial", 15))
-labelLAT.place(relx = 0.671, rely = 0.71)
-
-labelLATres = tkinter.Label(ventana, text = "lat", bg = "#66E1FF", font=("Arial", 22))
-labelLATres.place(relx = 0.654, rely = 0.76)
-
-labelLON = tkinter.Label(ventana, text = "LONGITUD", bg = "#66E1FF", font=("Arial", 15))
-labelLON.place(relx = 0.658, rely = 0.83)
-
-labelLONres = tkinter.Label(ventana, text = "lon", bg = "#66E1FF", font=("Arial", 22))
-labelLONres.place(relx = 0.65, rely = 0.88)
-
+#Boton para salir
 boton = tkinter.Button(ventana, text = "Salir", command = exit)
 boton.place(relx = 0.9, rely = 0.72)  
-  
+
+#Boton para apagar
 boton = tkinter.Button(ventana, text = "Apagar", command = lambda: apagar())
 boton.place(relx = 0.9, rely = 0.85)
 
-def leeImprime(aire):
-    compruebaHora()
+def lee_modulos(aire, spl, pos):
+    act_hora()                              #Actualiza hora
     
-    labelCO2res["text"] = aire[0]
-    labelPM25res["text"] = aire[1]
-    labelPM10res["text"] = aire[2]
-    labelTEMPres["text"] = aire[3]
+    #imprime datos en pantalla
+    label_res_co2["text"] = aire[0]             #co2
+    label_res_pm25["text"] = aire[1]            #pm25
+    label_res_pm10["text"] = aire[2]            #pm10
+    label_res_temp["text"] = aire[3]            #temp
 
-def compruebaHora():
-    tiempo = time.ctime()
+    label_res_spl["text"] = spl                 #spl
+
+    label_res_lat["text"] = pos[0]              #latitud
+    label_res_lon["text"] = pos[1]              #longitud
+
+    #Crea string para la solicitud
+    http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl}&field5={aire[3]}&field7={pos[0]}&field8={pos[1]}'
+    r = ts_server.request('GET', http_request)  #Envia a thingspeak
+
+def act_hora():
+    tiempo = time.ctime()                       #Obtiene hora del sistema
     hora = tiempo[11]+tiempo[12]
     minutos = tiempo[14]+tiempo[15]
-    labelHora["text"] = hora+':'+minutos
-    if int(hora) >= 19:
-        labelBG["image"] = bg2
-        labelHora["bg"] = "#062544"
-        labelHora["fg"] = "#FFFFFF"
-        labelSPL["bg"] = "#66E1FF"
-        labelSPLres["bg"] = "#66E1FF"
-    else:
-        labelBG["image"] = bg1
-        labelHora["bg"] = "#FFFFFF"
-        labelHora["fg"] = "#000000"
-        labelSPL["bg"] = "#FFFFFF"
-        labelSPLres["bg"] = "#FFFFFF"
+    label_hora["text"] = hora+':'+minutos       #Imprime hora
+    if int(hora) >= 19 and int(hora) < 7:       #Fondo obscuro de 19:00 a 7:00
+        label_bg["image"] = bg2
+        label_hora["bg"] = "#062544"
+        label_hora["fg"] = "#FFFFFF"
+        label_spl["bg"] = "#66E1FF"
+        label_res_spl["bg"] = "#66E1FF"
+    else:                                       #Fondo claro para el resto del dia
+        label_bg["image"] = bg1
+        label_hora["bg"] = "#FFFFFF"
+        label_hora["fg"] = "#000000"
+        label_spl["bg"] = "#FFFFFF"
+        label_res_spl["bg"] = "#FFFFFF"
         
-ventana.mainloop()
+ventana.mainloop()                              #Loop para mantener la ventana
