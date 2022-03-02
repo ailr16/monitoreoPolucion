@@ -13,18 +13,24 @@ import subprocess                   #Procesos del SO
 
 ##########################Variables generales###########################
 GPIO.setmode(GPIO.BOARD)            #Numeracion de la tarjeta
-in_signal = 16                      #Pin para interrupcion SM300D2
 i = 0                               #Variable para contador
 wifi_status = False
+med_sonido = [0,0,0,0]
+
+######################Pines para interrupciones#########################
+int_sm300 = 16                      #Pin para interrupcion SM300D2
+int_sonido = 18                     #Pin para interrupcion modulo sonido
+int_gps = 22                        #Pin para interrupcion gps
 
 #############################Puertos serie##############################
 mod = serial.Serial(port='/dev/ttyS0', baudrate = 9600, timeout = 1)      #UART1
-#gps = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UARTx
+sonido = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UART4
+gps = serial.Serial(port='/dev/ttyAMA2', baudrate = 9600, timeout = 1)    #UART5
 
 #############################Thingspeak#################################
 ps = subprocess.Popen(['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 try:
-    output = subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)    #Conexion Wifi
+    output = subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)    #Verifica Conexion Wifi
     wifi_status = True
 except subprocess.CalledProcessError:
     wifi_status = False                                                     #No conexion wifi
@@ -59,6 +65,54 @@ def lee_SM300():                        #Leer modulo SM300D2
 
     return [co2, pm25, pm10, temp]      #Regresa una lista con valores recibidos
 
+
+def lee_gps():
+    proto = ['p','r','o','t','o','c']
+
+    while proto != ['$','G','P','R','M','C']:
+        linea = gps.readline()
+        linea = linea.decode("utf-8")
+        proto = [linea[0], linea[1], linea[2], linea[3], linea[4], linea[5]]
+
+    if linea[17] == 'A':
+        status = 1
+        lat = int(linea[19] + linea[20]) + int(linea[21] + linea[22])/60 + int(linea[24]+ linea[25] + linea[26] + linea[27] + linea[28])/6000000
+        ns = linea[30]
+        if ns == 'S':
+            lat = lat*(-1)
+        lon = int(linea[32] + linea[33] + linea[34]) + int(linea[35] + linea[36])/60 + int(linea[38] + linea[39] + linea[40] + linea[41] + linea[42])/6000000
+        ew = linea[44]
+        if ew == 'W':
+            lon = lon*(-1)
+    else:
+        status = 0
+        lat = 0
+        lon = 0
+        
+    return [status, lat, lon]
+
+def lee_sonido():
+    res_num = 0
+    res = ''
+    lee1 = 0
+    lee2 = 0
+
+    lee1 = ord(uart.read())
+    lee2 = ord(uart.read())
+    
+    res_num = lee1*256+lee2
+    
+    if  res_num > 0 and res_num < 400:
+        res = 'Bajo'
+    elif res_num > 400 and res_num < 700:
+        res = 'Moderado'
+    elif res_num > 700 and res_num < 850:
+        res = 'Alto'
+    else:
+        res = 'Muy alto'
+        
+    return res
+    
 def i_event(channel):                   #Atencion a la interrupcion
         global i                        #Accede a la variable para contador
 
@@ -137,7 +191,7 @@ boton = tkinter.Button(ventana, text = "Apagar", command = lambda: apagar())
 boton.place(relx = 0.9, rely = 0.85)
 
 def lee_modulos(aire, spl, pos):
-    act_hora()                              #Actualiza hora
+    act_hora()                                  #Actualiza hora
     
     #imprime datos en pantalla
     label_res_co2["text"] = aire[0]             #co2

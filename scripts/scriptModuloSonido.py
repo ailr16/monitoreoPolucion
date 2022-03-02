@@ -8,7 +8,7 @@ import RPi.GPIO as GPIO
 uart = serial.Serial(port='/dev/ttyS0', baudrate=9600, timeout=1)
 
 GPIO.setmode(GPIO.BOARD)
-in_signal = 16
+in_signal = 22
 
 lee1 = 0
 lee2 = 0
