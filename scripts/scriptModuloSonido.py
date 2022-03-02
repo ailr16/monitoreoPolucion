@@ -5,18 +5,36 @@ import serial
 import time
 import RPi.GPIO as GPIO
 
-uart = serial.Serial(port='/dev/ttyS0', baudrate=9600, timeout=1)
-gps = serial.Serial(port='/dev/ttyAMA1', baudrate=9600, timeout = 1)
+mod = serial.Serial(port='/dev/ttyS0', baudrate = 9600, timeout = 1)      #UART1
+sonido = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UART4
+gps = serial.Serial(port='/dev/ttyAMA2', baudrate = 9600, timeout = 1)    #UART5
 
 GPIO.setmode(GPIO.BOARD)
-in_signal = 22
+in_signal = 16
 
 lee1 = 0
 lee2 = 0
 
 def i_event(channel):
-    lee1 = ord(uart.read())
-    lee2 = ord(uart.read())
+    lista = []                          #Inicializa lista vacia
+    b1 = 'x'                            #Inicializa bytes para verificar paquete
+    b2 = 'x'
+    while ord(b1)!=60 and ord(b2)!=2:   #Busca inicio del paquete
+        b1 = mod.read()
+        b2 = mod.read()
+
+    j = 0
+    while j<15:                         #Guarda el paquete recibido
+        lista.append(ord(mod.read()))
+        j = j + 1
+
+    co2 = lista[0]*256 + lista[1]       #Decodifica el paquete
+    pm25 = lista[6]*256 + lista[7]
+    pm10 = lista[8]*256 + lista[9]
+    temp = lista[10] + lista[11]/10
+
+    lee1 = ord(sonido.read())
+    lee2 = ord(sonido.read())
     
     proto = ['p','r','o','t','o','c']
 
@@ -40,9 +58,10 @@ def i_event(channel):
         status = 0
         lat = 0
         lon = 0
-    
+
+    print("CO2= " + str(co2) + ", PM25= " + str(pm25) + ", PM10= " + str(pm10) + ", TEMP= " + str(temp))
     print("SPL= " + str(lee1*256+lee2))
-    print("GPS= " + str(lat) + "," + str(lon))
+    print("GPS= " + str(lat) + "," + str(lon) + "\n")
             
 GPIO.setup(in_signal, GPIO.IN)
 GPIO.add_event_detect(in_signal, GPIO.FALLING, callback=i_event)
