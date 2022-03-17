@@ -207,8 +207,8 @@ def lee_modulos(aire, spl, pos):
 
     label_res_spl["text"] = spl                 #spl
 
-    label_res_lat["text"] = pos[1]              #latitud
-    label_res_lon["text"] = pos[2]              #longitud
+    label_res_lat["text"] = round(pos[1], 6)       #latitud
+    label_res_lon["text"] = round(pos[2],6)       #longitud
 
     if wifi_status == True:                     #Si hay conexion wifi
         #Crea string para la solicitud
