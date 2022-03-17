@@ -119,7 +119,7 @@ def i_event(channel):                   #Atencion a la interrupcion
         global i                        #Accede a la variable para contador
 
         i = i + 1                       #Incrementa el contador
-        if i == 10:                     #Al recibir 20 pulsos
+        if i == 15:                     #Al recibir 20 pulsos
             i = 0                       #Resetea el contador
             lee_modulos(lee_SM300(), lee_sonido(), lee_gps()) #Lee modulos
         else:
