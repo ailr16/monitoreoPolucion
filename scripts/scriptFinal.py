@@ -26,6 +26,23 @@ mod = serial.Serial(port='/dev/ttyS0', baudrate = 9600, timeout = 1)      #UART1
 sonido = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UART4
 gps = serial.Serial(port='/dev/ttyAMA2', baudrate = 9600, timeout = 1)    #UART5
 
+#############################Thingspeak#################################
+ps = subprocess.Popen(['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+try:
+    output = subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)    #Verifica Conexion Wifi
+    wifi_status = True
+except subprocess.CalledProcessError:
+    wifi_status = False                                                     #No conexion wifi
+
+archivo = open('key')
+ts_apikey = str(archivo.readline())      #API KEY para Thingspeak
+archivo.close()
+
+if wifi_status == True:
+    ts_server = urllib3.PoolManager()   #Iniciar comunicacion con servidor
+else:
+    pass
+
 #######################Funciones fuera de loop##########################
 def apagar():                           #Apagar el sistema
     os.system("sudo shutdown -h now")
