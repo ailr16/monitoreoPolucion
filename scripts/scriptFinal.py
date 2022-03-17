@@ -216,10 +216,10 @@ def lee_modulos(aire, spl, pos):
 
     if wifi_status == True:                     #Si hay conexion wifi
         #Crea string para la solicitud
-        http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl[1]}&field5={aire[3]}&field7={pos[0]}&field8={pos[1]}'
+        http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl[1]}&field5={aire[3]}&field7={pos[1]}&field8={pos[0]}'
         r = ts_server.request('GET', http_request)  #Envia a thingspeak
     else:
-        lecturas = f'{ts_apikey},{aire[0]},{aire[1]},{aire[2]},{spl},{aire[3]},{pos[0]},{pos[1]}'
+        lecturas = f'{ts_apikey},{aire[0]},{aire[1]},{aire[2]},{spl},{aire[3]},{pos[1]},{pos[2]}'
         archivo_offline = open("offline", 'a')
         archivo_offline.write(lecturas + "\n")
         archivo_offline.close
