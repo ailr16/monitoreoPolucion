@@ -87,11 +87,11 @@ def lee_sonido():
     
     res_num = lee1*256+lee2
     
-    if  res_num > 0 and res_num < 400:
+    if  res_num > 0 and res_num < 316:
         res = 'Bajo'
-    elif res_num > 400 and res_num < 700:
+    elif res_num >= 316  and res_num < 328:
         res = 'Moderado'
-    elif res_num > 700 and res_num < 850:
+    elif res_num >= 328 and res_num <= 332:
         res = 'Alto'
     else:
         res = 'Muy alto'
