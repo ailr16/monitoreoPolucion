@@ -10,4 +10,4 @@ except subprocess.CalledProcessError:
 if status == "WIFI":
     print("Red disponible")
 else:
-    print("Red no disponible")
+    print("Red no disponible :-(")
