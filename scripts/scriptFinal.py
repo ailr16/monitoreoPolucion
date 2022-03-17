@@ -12,7 +12,7 @@ import subprocess                   #Procesos del SO
 
 ##########################Variables generales###########################
 GPIO.setmode(GPIO.BOARD)            #Numeracion de la tarjeta
-i = 14                               #Variable para contador
+i = 13                               #Variable para contador
 wifi_status = False
 med_sonido = [0,0,0,0]
 
@@ -109,14 +109,18 @@ def lee_sonido():
     
     if  res_num > 0 and res_num < 316:
         res = 'Bajo'
+        res_n = 1
     elif res_num >= 316  and res_num < 328:
         res = 'Moderado'
+        res_n = 2
     elif res_num >= 328 and res_num <= 332:
         res = 'Alto'
+        res_n = 3
     else:
         res = 'Muy alto'
+        res_n = 4
         
-    return res
+    return [res, res_n]
 
 def i_event(channel):                   #Atencion a la interrupcion
         global i                        #Accede a la variable para contador
@@ -205,14 +209,14 @@ def lee_modulos(aire, spl, pos):
     label_res_pm10["text"] = aire[2]            #pm10
     label_res_temp["text"] = aire[3]            #temp
 
-    label_res_spl["text"] = spl                 #spl
+    label_res_spl["text"] = spl[0]                 #spl
 
     label_res_lat["text"] = round(pos[1], 6)       #latitud
-    label_res_lon["text"] = round(pos[2],6)       #longitud
+    label_res_lon["text"] = round(pos[2], 6)       #longitud
 
     if wifi_status == True:                     #Si hay conexion wifi
         #Crea string para la solicitud
-        http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl}&field5={aire[3]}&field7={pos[0]}&field8={pos[1]}'
+        http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl[1]}&field5={aire[3]}&field7={pos[0]}&field8={pos[1]}'
         r = ts_server.request('GET', http_request)  #Envia a thingspeak
     else:
         lecturas = f'{ts_apikey},{aire[0]},{aire[1]},{aire[2]},{spl},{aire[3]},{pos[0]},{pos[1]}'
