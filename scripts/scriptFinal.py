@@ -12,7 +12,7 @@ import subprocess                   #Procesos del SO
 
 ##########################Variables generales###########################
 GPIO.setmode(GPIO.BOARD)            #Numeracion de la tarjeta
-i = 13                               #Variable para contador
+i = 12                               #Variable para contador
 wifi_status = False
 med_sonido = [0,0,0,0]
 
