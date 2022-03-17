@@ -12,7 +12,7 @@ import subprocess                   #Procesos del SO
 
 ##########################Variables generales###########################
 GPIO.setmode(GPIO.BOARD)            #Numeracion de la tarjeta
-i = 0                               #Variable para contador
+i = 9                               #Variable para contador
 wifi_status = False
 med_sonido = [0,0,0,0]
 
@@ -102,12 +102,11 @@ def i_event(channel):                   #Atencion a la interrupcion
         global i                        #Accede a la variable para contador
 
         i = i + 1                       #Incrementa el contador
-        if i == 20:                     #Al recibir 20 pulsos
+        if i == 10:                     #Al recibir 20 pulsos
             i = 0                       #Resetea el contador
             lee_modulos(lee_SM300(), lee_sonido(), lee_gps()) #Lee modulos
         else:
-            #act_hora()                  #Actualiza hora en pantalla
-            pass
+            act_hora()                  #Actualiza hora en pantalla
             
 GPIO.setup(int_sm300, GPIO.IN)          #Pin 16 como entrada
 GPIO.add_event_detect(int_sm300, GPIO.FALLING, callback=i_event)    #Interrupcion pin 16
@@ -176,6 +175,7 @@ boton.place(relx = 0.9, rely = 0.72)
 boton = tkinter.Button(ventana, text = "Apagar", command = lambda: apagar())
 boton.place(relx = 0.9, rely = 0.85)
 
+
 def lee_modulos(aire, spl, pos):
     act_hora()                                  #Actualiza hora
     
@@ -187,8 +187,8 @@ def lee_modulos(aire, spl, pos):
 
     label_res_spl["text"] = spl                 #spl
 
-    label_res_lat["text"] = pos[0]              #latitud
-    label_res_lon["text"] = pos[1]              #longitud
+    label_res_lat["text"] = pos[1]              #latitud
+    label_res_lon["text"] = pos[2]              #longitud
 
 def act_hora():
     tiempo = time.ctime()                       #Obtiene hora del sistema
