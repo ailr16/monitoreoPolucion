@@ -207,6 +207,13 @@ def lee_modulos(aire, spl, pos):
     label_res_lat["text"] = pos[1]              #latitud
     label_res_lon["text"] = pos[2]              #longitud
 
+    if wifi_status == True:                     #Si hay conexion wifi
+        #Crea string para la solicitud
+        http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl}&field5={aire[3]}&field7={pos[0]}&field8={pos[1]}'
+        r = ts_server.request('GET', http_request)  #Envia a thingspeak
+    else:
+        pass
+
 def act_hora():
     tiempo = time.ctime()                       #Obtiene hora del sistema
     hora = tiempo[11]+tiempo[12]
