@@ -1,8 +1,11 @@
 Creacion de llaves acceso (variables del SO):
 	HostName=monitoreoPolucion.azure-devices.net;DeviceId=m1;SharedAccessKey=oH7JV1wKJ8QDnxJQFLJU5c8tlEDuY/Sln2bVXH8YqAU=
 
-Key GitHub:
+Token GitHub RPi:
 	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
+
+Token GitHub Ubuntu:
+	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
 
 Listar puertos serie:
 	dmesg | grep tty
