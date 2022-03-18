@@ -19,7 +19,7 @@ SoftwareSerial port(rx_pin, tx_pin);                //Create serial port
 //16bit variables for manipulation
 short res_adc = 0;
 short res_adc_aux = 0;
-short res_adc_aux2 = 0; 
+short res_adc_aux2 = 0;
 
 //8bit variables for serial transmission
 unsigned char res_adc_H = 0;
