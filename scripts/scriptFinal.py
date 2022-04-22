@@ -32,7 +32,7 @@ try:
     output = subprocess.check_output(('grep', 'ESSID'), stdin=ps.stdout)    #Verifica Conexion Wifi
     wifi_status = True
 except subprocess.CalledProcessError:
-    wifi_status = False                                                     #No conexion wifi
+    wifi_status = False                                                     #No hay conexion wifi
 
 archivo = open('key')
 ts_apikey = str(archivo.readline())      #API KEY para Thingspeak
@@ -55,12 +55,14 @@ def lee_SM300():                        #Leer modulo SM300D2
         b1 = mod.read()
         b2 = mod.read()
 
+    #Guarda el paquete recibido
     j = 0
-    while j<15:                         #Guarda el paquete recibido
+    while j<15:                         
         lista.append(ord(mod.read()))
         j = j + 1
 
-    co2 = lista[0]*256 + lista[1]       #Decodifica el paquete
+    #Decodifica el paquete
+    co2 = lista[0]*256 + lista[1]
     pm25 = lista[6]*256 + lista[7]
     pm10 = lista[8]*256 + lista[9]
     temp = lista[10] + lista[11]/10
@@ -69,32 +71,32 @@ def lee_SM300():                        #Leer modulo SM300D2
 
 
 def lee_gps():
-    proto = ['p','r','o','t','o','c']
+    proto = ['p','r','o','t','o','c']               #Inicializa lista vacia
 
-    while proto != ['$','G','P','R','M','C']:
-        linea = gps.readline()
-        linea = linea.decode("utf-8")
-        proto = [linea[0], linea[1], linea[2], linea[3], linea[4], linea[5]]
+    while proto != ['$','G','P','R','M','C']:       #Cuando no detecte $GPRMC
+        linea = gps.readline()                      #Lee una linea
+        linea = linea.decode("utf-8")               #Decodifica UTF-8
+        proto = [linea[0], linea[1], linea[2], linea[3], linea[4], linea[5]]        #Guarda los primeros 6 carracteres
 
-    if linea[17] == 'A':
-        status = 1
-        lat = int(linea[19] + linea[20]) + int(linea[21] + linea[22])/60 + int(linea[24]+ linea[25] + linea[26] + linea[27] + linea[28])/6000000
-        ns = linea[30]
-        if ns == 'S':
+    if linea[17] == 'A':                            #Si el caracter 18 es A la lectura esta completa
+        status = 1                                  #Activa la bandera de status
+        lat = int(linea[19] + linea[20]) + int(linea[21] + linea[22])/60 + int(linea[24]+ linea[25] + linea[26] + linea[27] + linea[28])/6000000    #Decodifica latitud
+        ns = linea[30]                              #Obtiene la direccion N o S
+        if ns == 'S':                               #Si es sur es negativo
             lat = lat*(-1)
-        lon = int(linea[32] + linea[33] + linea[34]) + int(linea[35] + linea[36])/60 + int(linea[38] + linea[39] + linea[40] + linea[41] + linea[42])/6000000
-        ew = linea[44]
-        if ew == 'W':
+        lon = int(linea[32] + linea[33] + linea[34]) + int(linea[35] + linea[36])/60 + int(linea[38] + linea[39] + linea[40] + linea[41] + linea[42])/6000000   #Decodifica longitud
+        ew = linea[44]                              #Obtiene direccion E o W
+        if ew == 'W':                               #Si es oeste es negativo
             lon = lon*(-1)
-        archivo_gps = open("gps", 'w')
-        archivo_gps.write(str(lat) + "," + str(lon))
-        archivo_gps.close
-    else:
-        status = 0
+        archivo_gps = open("gps", 'w')              #Abre el archivo gps para guardar la ultima ubicacion
+        archivo_gps.write(str(lat) + "," + str(lon))    #Escribe la ubicacion
+        archivo_gps.close                           #Cierra el archivo
+    else:                                           #El caracter no fue A -> la lectura es erronea
+        status = 0                                  #Todos los valores seran cero para evitar errores
         lat = 0
         lon = 0
         
-    return [status, lat, lon]
+    return [status, lat, lon]                       #Regresa status latitud y longitud
 
 def lee_sonido():
     res_num = 0
