@@ -10,7 +10,7 @@ import os                           #Utilidades del SO
 import urllib3                      #Para protocolo HTTP
 import subprocess                   #Procesos del SO
 
-##########################Variables generales###########################
+##########################Variables globales###########################
 GPIO.setmode(GPIO.BOARD)            #Numeracion de la tarjeta
 i = 12                               #Variable para contador
 wifi_status = False
