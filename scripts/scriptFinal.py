@@ -33,9 +33,19 @@ try:
     wifi_status = True
 except subprocess.CalledProcessError:
     wifi_status = False                                                     #No hay conexion wifi
+    print("not wifi, testing eth")
+    ping_ethernet= os.system("ping -c4 10.10.10.20")
+    if ping_ethernet == 0:
+        wifi_status = True
+        print("eth detected")
+    else:
+        wifi_status = False
+        print("starting offline mode")
 
 archivo = open('key')
 ts_apikey = str(archivo.readline())      #API KEY para Thingspeak
+ts_apikey = ts_apikey[:-1]
+print("KEY loaded:", ts_apikey, "\n")
 archivo.close()
 
 if wifi_status == True:
@@ -216,15 +226,19 @@ def lee_modulos(aire, spl, pos):
     label_res_lat["text"] = round(pos[1], 5)       #latitud
     label_res_lon["text"] = round(pos[2], 5)       #longitud
 
+    print(f'{ts_apikey},{aire[0]},{aire[1]},{aire[2]},{spl},{aire[3]},{pos[1]},{pos[2]}')
+
     if wifi_status == True:                     #Si hay conexion wifi
         #Crea string para la solicitud
         http_request = f'https://api.thingspeak.com/update?api_key={ts_apikey}&field1={aire[0]}&field2={aire[1]}&field3={aire[2]}&field4={spl[1]}&field5={aire[3]}&field7={pos[1]}&field8={pos[2]}'
         r = ts_server.request('GET', http_request)  #Envia a thingspeak
+        print("sended to server")
     else:
         lecturas = f'{ts_apikey},{aire[0]},{aire[1]},{aire[2]},{spl},{aire[3]},{pos[1]},{pos[2]}'
         archivo_offline = open("offline", 'a')
         archivo_offline.write(lecturas + "\n")
         archivo_offline.close
+        print("saved offline")
 
 def act_hora():
     tiempo = time.ctime()                       #Obtiene hora del sistema
