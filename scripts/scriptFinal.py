@@ -141,7 +141,7 @@ def i_event(channel):                   #Atencion a la interrupcion
         i = i + 1                       #Incrementa el contador
         if i == 15:                     #Al recibir 20 pulsos
             i = 0                       #Resetea el contador
-            lee_modulos(lee_SM300(), ['Alto', 4], [0,0,0]]) #Lee modulos
+            lee_modulos(lee_SM300(), ['Alto', 4], [0,0,0]) #Lee modulos
         else:
             act_hora()                  #Actualiza hora en pantalla
             
