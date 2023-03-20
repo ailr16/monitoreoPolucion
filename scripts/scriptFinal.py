@@ -24,7 +24,7 @@ int_gps = 22                        #Pin para interrupcion gps
 #############################Puertos serie##############################
 mod = serial.Serial(port='/dev/ttyS0', baudrate = 9600, timeout = 1)      #UART1
 sonido = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UART4
-#gps = serial.Serial(port='/dev/ttyAMA2', baudrate = 9600, timeout = 1)    #UART5
+gps = serial.Serial(port='/dev/ttyAMA2', baudrate = 9600, timeout = 1)    #UART5
 
 #############################Thingspeak#################################
 ps = subprocess.Popen(['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -141,7 +141,7 @@ def i_event(channel):                   #Atencion a la interrupcion
         i = i + 1                       #Incrementa el contador
         if i == 15:                     #Al recibir 20 pulsos
             i = 0                       #Resetea el contador
-            lee_modulos(lee_SM300(), lee_sonido(), [0,0,0]) #Lee modulos
+            lee_modulos(lee_SM300(), lee_sonido(), lee_sonido()) #Lee modulos
         else:
             act_hora()                  #Actualiza hora en pantalla
             
