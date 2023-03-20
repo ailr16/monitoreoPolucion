@@ -6,7 +6,7 @@ import os                           #Utilidades del SO
 import urllib3                      #Para protocolo HTTP
 import subprocess                   #Procesos del SO
 
-mod = serial.Serial(port='/dev/ttyS0', baudrate = 9600, timeout = 1)      #UART1
+sonido = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UART4
 
 def lee_sonido():
     res_num = 0
