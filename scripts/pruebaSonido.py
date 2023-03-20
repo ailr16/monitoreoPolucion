@@ -1,4 +1,11 @@
-import time
+import serial                       #Comunicacion serie
+import tkinter                      #GUI
+import RPi.GPIO as GPIO             #GPIO de la RPi
+import time                         #Libreria de tiempo
+import os                           #Utilidades del SO
+import urllib3                      #Para protocolo HTTP
+import subprocess                   #Procesos del SO
+
 mod = serial.Serial(port='/dev/ttyS0', baudrate = 9600, timeout = 1)      #UART1
 
 def lee_sonido():
