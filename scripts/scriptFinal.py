@@ -23,7 +23,7 @@ int_gps = 22                        #Pin para interrupcion gps
 
 #############################Puertos serie##############################
 mod = serial.Serial(port='/dev/ttyS0', baudrate = 9600, timeout = 1)      #UART1
-#sonido = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UART4
+sonido = serial.Serial(port='/dev/ttyAMA1', baudrate = 9600, timeout = 1)    #UART4
 #gps = serial.Serial(port='/dev/ttyAMA2', baudrate = 9600, timeout = 1)    #UART5
 
 #############################Thingspeak#################################
